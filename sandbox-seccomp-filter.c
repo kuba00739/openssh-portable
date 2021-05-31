@@ -163,6 +163,8 @@ static const struct sock_filter preauth_insns[] = {
 #ifdef __NR_newfstatat
 	SC_DENY(__NR_newfstatat, EACCES),
 #endif
+
+#ifndef NERSC_MOD
 #ifdef __NR_stat
 	SC_DENY(__NR_stat, EACCES),
 #endif
@@ -178,6 +180,7 @@ static const struct sock_filter preauth_insns[] = {
 #ifdef __NR_shmdt
 	SC_DENY(__NR_shmdt, EACCES),
 #endif
+#endif //NERSC_MOD
 #ifdef __NR_ipc
 	SC_DENY(__NR_ipc, EACCES),
 #endif
@@ -282,6 +285,22 @@ static const struct sock_filter preauth_insns[] = {
 #ifdef __NR_read
 	SC_ALLOW(__NR_read),
 #endif
+
+#ifdef NERSC_MOD
+#ifdef __NR_sendto
+	SC_ALLOW(__NR_sendto),
+#endif
+#ifdef __NR_stat
+	SC_ALLOW(__NR_stat),
+#endif
+#ifdef __NR_socket
+	SC_ALLOW(__NR_socket),
+#endif
+#ifdef __NR_connect
+	SC_ALLOW(__NR_connect),
+#endif
+#endif // NERSC_MOD
+
 #ifdef __NR_rt_sigprocmask
 	SC_ALLOW(__NR_rt_sigprocmask),
 #endif

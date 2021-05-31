@@ -70,6 +70,10 @@
 #include "channels.h" /* XXX for session.h */
 #include "session.h" /* XXX for child_set_env(); refactor? */
 #include "sk-api.h"
+#ifdef NERSC_MOD
+#include "nersc.h"
+extern int client_session_id;
+#endif
 
 /* import */
 extern ServerOptions options;
@@ -682,6 +686,18 @@ check_authkey_line(struct ssh *ssh, struct passwd *pw, struct sshkey *key,
 	    key->cert->key_id,
 	    (unsigned long long)key->cert->serial,
 	    sshkey_type(found), fp, loc);
+
+#ifdef NERSC_MOD
+	char* t1key = encode_string(fp, strlen(fp));
+	char* t2key = encode_string(sshkey_type(found), strlen(sshkey_type(found)) );
+
+	s_audit("auth_key_fingerprint_3", "count=%i uristring=%s uristring=%s",
+		client_session_id, t1key, t2key);
+
+	free(t1key);
+	free(t2key);
+#endif
+
 
  success:
 	if (finalopts == NULL)

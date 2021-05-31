@@ -206,7 +206,8 @@ typedef struct {
 	int	none_enabled;		/* Enable NONE cipher switch */
         int     disable_multithreaded;  /*disable multithreaded aes-ctr cipher */
 	int     nonemac_enabled;        /* Enable NONE MAC switch */
-  
+	int	audit_disabled;		/* disable SSHD instrumentation */
+
 	int	permit_tun;
 
 	char   **permitted_opens;	/* May also be one of PERMITOPEN_* */

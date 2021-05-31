@@ -35,6 +35,7 @@
 #endif
 #include <pwd.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -168,7 +169,7 @@ typedef enum {
 	oTunnel, oTunnelDevice,
 	oLocalCommand, oPermitLocalCommand, oRemoteCommand,
 	oTcpRcvBufPoll, oTcpRcvBuf, oHPNDisabled, oHPNBufferSize,
-	oNoneEnabled, oNoneMacEnabled, oNoneSwitch,
+	oNoneEnabled, oNoneMacEnabled, oAuditDisabled, oNoneSwitch, 
 	oDisableMTAES,
 	oVisualHostKey,
 	oKexAlgorithms, oIPQoS, oRequestTTY, oIgnoreUnknown, oProxyUseFdpass,
@@ -327,6 +328,7 @@ static struct {
 	{ "tcprcvbufpoll", oTcpRcvBufPoll },
 	{ "tcprcvbuf", oTcpRcvBuf },
 	{ "hpndisabled", oHPNDisabled },
+	{ "auditdisabled", oAuditDisabled },
 	{ "hpnbuffersize", oHPNBufferSize },
 	{ NULL, oBadOption }
 };
@@ -1141,6 +1143,10 @@ parse_time:
 			debug("NoneSwitch directive found in %.200s.", filename);
 			return 0;
 		}
+
+	case oAuditDisabled:
+		intptr = &options->audit_disabled;
+		goto parse_flag;
 
 	case oVerifyHostKeyDNS:
 		intptr = &options->verify_host_key_dns;
@@ -2323,6 +2329,7 @@ initialize_options(Options * options)
         options->disable_multithreaded = -1;
 	options->hpn_disabled = -1;
 	options->hpn_buffer_size = -1;
+	options->audit_disabled = -1;
 	options->tcp_rcv_buf_poll = -1;
 	options->tcp_rcv_buf = -1;
 	options->proxy_use_fdpass = -1;
@@ -2491,6 +2498,8 @@ fill_default_options(Options * options)
 		options->server_alive_count_max = 3;
 	if (options->hpn_disabled == -1)
 		options->hpn_disabled = 0;
+	if (options->audit_disabled == -1)
+		options->audit_disabled = 0;
 	if (options->hpn_buffer_size > -1) {
 		/* if a user tries to set the size to 0 set it to 1KB */
 		if (options->hpn_buffer_size == 0)

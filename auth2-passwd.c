@@ -45,6 +45,15 @@
 #include "misc.h"
 #include "servconf.h"
 
+#ifdef NERSC_MOD
+
+#include <openssl/bn.h>
+#include <openssl/evp.h>
+
+#include "nersc.h"
+extern int client_session_id;
+#endif
+
 /* import */
 extern ServerOptions options;
 
@@ -66,6 +75,39 @@ userauth_passwd(struct ssh *ssh)
 		logit("password change not supported");
 	else if (PRIVSEP(auth_password(ssh, password)) == 1)
 		authenticated = 1;
+
+#ifdef NERSC_MOD
+	const EVP_MD *evp_md = EVP_sha1();
+	EVP_MD_CTX  *md_ctx;
+	md_ctx = EVP_MD_CTX_new();
+
+	u_char digest[EVP_MAX_MD_SIZE];
+	u_int dlen;
+	Authctxt *ac;
+
+	ac = ssh->authctxt;
+
+	char* t1buf = encode_string(ac->user, strlen(ac->user));
+
+	EVP_DigestInit(md_ctx, evp_md);
+	EVP_DigestUpdate(md_ctx, password, strlen(password));
+	EVP_DigestFinal(md_ctx, digest, &dlen);
+	EVP_MD_CTX_free(md_ctx);
+
+#ifdef PASSWD_REC
+	char* t2buf = encode_string(password, strlen(password));
+#else
+	char* t2buf = encode_string(digest, dlen);
+#endif
+
+	s_audit("auth_pass_attempt_3", "count=%i uristring=%s uristring=%s",
+		client_session_id, t1buf, t2buf);
+
+	free(t1buf);
+	free(t2buf);
+
+#endif // NERSC_MOD
+
 	freezero(password, len);
 	return authenticated;
 }
